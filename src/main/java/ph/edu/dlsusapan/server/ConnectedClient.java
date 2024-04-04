@@ -49,8 +49,11 @@ public class ConnectedClient {
                     if ((message = in.readLine()) != null) {
                         server.receive((Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(message)));
                     }
-                } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    // TODO
+                    System.out.println("CLIENT DISCONNECTED");
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
