@@ -13,7 +13,7 @@ public class Input {
         System.out.print(prompt + " => ");
         while (!scanner.hasNextInt()) {
             scanner.next(); // consume non-integer token
-            System.out.print("Invalid input - " + prompt + " => ");
+            System.out.print(prompt + " => ");
         }
         return scanner.nextInt();
     }
