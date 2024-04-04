@@ -13,6 +13,9 @@ import java.util.Base64;
 import java.util.Scanner;
 import java.util.UUID;
 
+/**
+ * A client representation
+ */
 public class Client implements Transceiver {
 
     public final UUID uuid;
@@ -20,6 +23,9 @@ public class Client implements Transceiver {
 
     private final Socket socket;
 
+    /**
+     * used to send a message to the server
+     */
     private final PrintWriter out;
 
 
@@ -36,16 +42,32 @@ public class Client implements Transceiver {
         this.uuid = uuid;
         this.name = name;
 
+        /**
+         * create socket connection
+         */
         socket = new Socket(host, port);
 
         out = new PrintWriter(socket.getOutputStream(), true);
 
+        /**
+         * Create an initial message / login message for the server to save this client representation
+         */
+
         transmit(new Message(uuid, name, MessageType.LOGIN, "Joined the chat!", null));
 
+        /**
+         * Listens messages from the server
+         */
         listen();
 
+        /**
+         * Used to read inputs from the console
+         */
         Scanner scanner = new Scanner(System.in);
 
+        /**
+         * Runs indefinitely until the program's terminated. This processes the input from the scanner above
+         */
         do {
             String messageContent = scanner.nextLine();
 
@@ -54,6 +76,9 @@ public class Client implements Transceiver {
             String content = null;
             MessageAttachment messageAttachment = null;
 
+            /**
+             * indicates a command
+             */
             if (messageContent.startsWith("/")) { // meaning this is a command
                 String[] command = messageContent.split(" ");
 
@@ -98,21 +123,38 @@ public class Client implements Transceiver {
         } while(true);
     }
 
+    /**
+     * Sends the message to the server
+     * @param message the message
+     */
     @Override
     public void transmit(Message message) {
         try {
+            /**
+             * convert the object to byte array, then encode it to string
+             */
             out.println(Base64.getEncoder().encodeToString(ObjectSerializer.serialize(message)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Process the message received from the server
+     * @param message the message
+     */
     @Override
     public void receive(Message message) {
+        /**
+         * if the message is not an attachment
+         */
         if (message.content != null) {
             System.out.println(((message.fromName != null) ? message.fromName : "Server") + " => " + message.content);
         }
 
+        /**
+         * if the message is an attachment
+         */
         if (message.messageAttachment != null) {
             try {
                 System.out.println((message.fromName != null) ? message.fromName : "Server" + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
@@ -123,6 +165,13 @@ public class Client implements Transceiver {
     }
 
     public void listen() {
+
+        /**
+         * Threading, similarly, this repeatedly reads the output from the client
+         * and when there is a message, then it calls receive() method to process the message
+         * this also blocks the main thread due to repeatedly reading the output in an indefinite manner, hence
+         * the threading
+         */
         new Thread(() -> {
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 String message;

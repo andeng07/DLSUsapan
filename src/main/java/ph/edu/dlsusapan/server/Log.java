@@ -2,8 +2,10 @@ package ph.edu.dlsusapan.server;
 
 import java.util.Date;
 
+/**
+ * A representation of a log object
+ */
 public class Log {
-
     public final Date timestamp;
     public final String source;
     public final String destination;
@@ -16,6 +18,10 @@ public class Log {
         this.action = action;
     }
 
+    /**
+     * converts the object to string in a format
+     * @return log string
+     */
     @Override
     public String toString() {
         return "\n" +
