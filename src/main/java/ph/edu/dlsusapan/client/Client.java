@@ -39,22 +39,21 @@ public class Client implements Transceiver {
         listen();
 
         Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.print(name + " => ");
+
+        do {
+            String messageContent = scanner.nextLine();
 
             String content = null;
             MessageAttachment messageAttachment = null;
-
-            String messageContent = scanner.nextLine();
 
             if (messageContent.startsWith("/")) { // meaning this is a command
                 String[] command = messageContent.split(" ");
 
                 switch (command[0]) {
 
-                    case "/attachment" -> {
+                    case "/attach" -> {
                         if (command.length != 2) {
-                            System.out.println("Usage: /attachment <file>");
+                            System.out.println("Usage: /attach <file>");
                             continue;
                         }
 
@@ -80,7 +79,8 @@ public class Client implements Transceiver {
                 transmit(new Message(uuid, name, MessageType.SEND_ATTACHMENT, null, messageAttachment));
                 continue;
             }
-        }
+
+        } while(true);
     }
 
     @Override
@@ -95,13 +95,12 @@ public class Client implements Transceiver {
     @Override
     public void receive(Message message) {
         if (message.content != null) {
-            System.out.println(message.fromName + " => " + message.content);
-            return;
+            System.out.println("\n" + message.fromName + " => " + message.content);
         }
 
         if (message.messageAttachment != null) {
             try {
-                System.out.println(message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
+                System.out.println("\n" + message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -116,7 +115,13 @@ public class Client implements Transceiver {
 
                     receive((Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(message)));
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException e) {
+
+                // TODO
+
+                System.out.println("SERVER ENDED");
+
+            } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }).start();
