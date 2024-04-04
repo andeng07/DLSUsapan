@@ -18,21 +18,23 @@ public class Client implements Transceiver {
     public final UUID uuid;
     public final String name;
 
-    public final boolean logToFile;
-
     private final Socket socket;
 
     private final PrintWriter out;
 
 
-    public Client(String host, int port, UUID uuid, String name, boolean logToFile) throws IOException, InterruptedException {
-        System.out.println("\nYour connection to the DLSUsapan Chat Room on port " + port + " has been successfully\nestablished. Your unique ID is: " + uuid + ". Please\nensure to retain this ID for all future logins.");
+    public Client(String host, int port, UUID uuid, String name) throws IOException, InterruptedException {
+        System.out.println("\nYour connection to the DLSUsapan Chat Room on port " + port + " has been successfully" +
+                "\nestablished. Your unique ID is: " + uuid + ". Please" +
+                "\nensure to retain this ID for all future logins.");
 
-        System.out.println("\n\t\tCommands (/):\n\t\t\ttype '/attach' to send a file.\n\t\t\ttype '/logout' to log out and close the connection.\n\t\t\ttype any message to start messaging.");
+        System.out.println("\n\t\tCommands (/):" +
+                "\n\t\t\ttype '/attach <file>' to send a file." +
+                "\n\t\t\ttype '/logout' to log out and close the connection." +
+                "\n\t\t\ttype any message to start messaging.\n");
 
         this.uuid = uuid;
         this.name = name;
-        this.logToFile = logToFile;
 
         socket = new Socket(host, port);
 
@@ -46,6 +48,8 @@ public class Client implements Transceiver {
 
         do {
             String messageContent = scanner.nextLine();
+
+            if (messageContent.isBlank() || messageContent.isEmpty()) continue;
 
             String content = null;
             MessageAttachment messageAttachment = null;
@@ -69,6 +73,13 @@ public class Client implements Transceiver {
                         }
 
                         messageAttachment = new MessageAttachment(file.getName(), FileSerializer.fileToBytes(file.getPath()));
+                    }
+
+                    case "/logout" -> {
+                        Message logoutMessage = new Message(uuid, name, MessageType.LOGOUT, "has logged out.", null);
+                        transmit(logoutMessage);
+
+                        socket.close();
                     }
                 }
             } else {
@@ -99,12 +110,12 @@ public class Client implements Transceiver {
     @Override
     public void receive(Message message) {
         if (message.content != null) {
-            System.out.println(message.fromName + " => " + message.content);
+            System.out.println(((message.fromName != null) ? message.fromName : "Server") + " => " + message.content);
         }
 
         if (message.messageAttachment != null) {
             try {
-                System.out.println(message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
+                System.out.println((message.fromName != null) ? message.fromName : "Server" + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -120,11 +131,7 @@ public class Client implements Transceiver {
                     receive((Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(message)));
                 }
             } catch (IOException e) {
-
-                // TODO
-
-                System.out.println("SERVER ENDED");
-
+                System.out.println(name + " => has logged out.");
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
