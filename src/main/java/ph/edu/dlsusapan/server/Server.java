@@ -3,7 +3,7 @@ package ph.edu.dlsusapan.server;
 import ph.edu.dlsusapan.common.message.Message;
 import ph.edu.dlsusapan.common.message.MessageType;
 import ph.edu.dlsusapan.common.message.Transceiver;
-import ph.edu.dlsusapan.common.object.ObjectSerializer;
+import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -91,18 +91,18 @@ public class Server implements Transceiver {
             case MessageType.LOGOUT -> "User Logout";
             case MessageType.SEND_MESSAGE -> "User Send Message";
             case MessageType.RECEIVED_MESSAGE -> "User Received Message";
-            case MessageType.SEND_FILE -> "User Send File";
-            case MessageType.RECEIVED_FILE -> "User Received File";
+            case MessageType.SEND_ATTACHMENT -> "User Send Attachment";
+            case MessageType.RECEIVED_ATTACHMENT -> "User Received Attachment";
             default -> "None";
         };
 
         System.out.println(
                 "\n" +
-                "Timestamp => " + timestamp + "\n" +
-                "Message Source => " + message.fromId + " | " + message.fromName + "\n" +
-                "Message Destination => " + (destination == null ? "None" : destination.uuid + " | " + destination.name) + "\n" +
-                "Action => " + action +
-                "\n"
+                        "Timestamp => " + timestamp + "\n" +
+                        "Message Source => " + message.fromId + " | " + message.fromName + "\n" +
+                        "Message Destination => " + (destination == null ? "None" : destination.uuid + " | " + destination.name) + "\n" +
+                        "Action => " + action +
+                        "\n"
         );
 
     }

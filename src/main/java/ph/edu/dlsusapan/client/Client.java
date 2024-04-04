@@ -1,14 +1,13 @@
 package ph.edu.dlsusapan.client;
 
 import ph.edu.dlsusapan.common.message.Message;
+import ph.edu.dlsusapan.common.message.MessageAttachment;
 import ph.edu.dlsusapan.common.message.MessageType;
 import ph.edu.dlsusapan.common.message.Transceiver;
-import ph.edu.dlsusapan.common.object.ObjectSerializer;
+import ph.edu.dlsusapan.common.serializer.FileSerializer;
+import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Base64;
 import java.util.Scanner;
@@ -35,14 +34,52 @@ public class Client implements Transceiver {
 
         out = new PrintWriter(socket.getOutputStream(), true);
 
-        transmit(new Message(uuid, name, MessageType.LOGIN, "Joined the chat!"));
+        transmit(new Message(uuid, name, MessageType.LOGIN, "Joined the chat!", null));
 
         listen();
 
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.print(name + " => ");
-            transmit(new Message(uuid, name, MessageType.SEND_MESSAGE, scanner.nextLine()));
+
+            String content = null;
+            MessageAttachment messageAttachment = null;
+
+            String messageContent = scanner.nextLine();
+
+            if (messageContent.startsWith("/")) { // meaning this is a command
+                String[] command = messageContent.split(" ");
+
+                switch (command[0]) {
+
+                    case "/attachment" -> {
+                        if (command.length != 2) {
+                            System.out.println("Usage: /attachment <file>");
+                            continue;
+                        }
+
+                        File file = new File(command[1]);
+
+                        if (!file.exists()) {
+                            System.out.println("File not found!");
+                            continue;
+                        }
+
+                        messageAttachment = new MessageAttachment(file.getName(), FileSerializer.fileToBytes(file.getPath()));
+                    }
+                }
+            } else {
+                content = messageContent;
+            }
+
+            if (content != null) {
+                transmit(new Message(uuid, name, MessageType.SEND_MESSAGE, content, null));
+                continue;
+            }
+            if (messageAttachment != null) {
+                transmit(new Message(uuid, name, MessageType.SEND_ATTACHMENT, null, messageAttachment));
+                continue;
+            }
         }
     }
 
@@ -57,15 +94,17 @@ public class Client implements Transceiver {
 
     @Override
     public void receive(Message message) {
-        System.out.println(message.fromName + " => " + message.content);
+        if (message.content != null) {
+            System.out.println(message.fromName + " => " + message.content);
+            return;
+        }
 
-        int action = -1;
-
-        if (message.type == MessageType.SEND_MESSAGE) action = MessageType.RECEIVED_MESSAGE;
-        else if (message.type == MessageType.SEND_FILE) action = MessageType.RECEIVED_MESSAGE;
-
-        switch (message.type) {
-            case MessageType.SEND_MESSAGE, MessageType.SEND_FILE -> transmit(new Message(uuid, name, action, null));
+        if (message.messageAttachment != null) {
+            try {
+                System.out.println(message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

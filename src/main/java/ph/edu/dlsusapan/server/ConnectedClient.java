@@ -1,7 +1,7 @@
 package ph.edu.dlsusapan.server;
 
 import ph.edu.dlsusapan.common.message.Message;
-import ph.edu.dlsusapan.common.object.ObjectSerializer;
+import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
 import java.io.*;
 import java.net.Socket;

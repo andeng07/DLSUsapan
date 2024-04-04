@@ -7,6 +7,7 @@ import java.io.IOException;
 public class ServerProgram {
 
     public static void main(String[] args) {
+
         try {
             new Server(9201, false);
         } catch (IOException e) {

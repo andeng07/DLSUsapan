@@ -1,4 +1,4 @@
-package ph.edu.dlsusapan.common.object;
+package ph.edu.dlsusapan.common.serializer;
 
 import java.io.*;
 

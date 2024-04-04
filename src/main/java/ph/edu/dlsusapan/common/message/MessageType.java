@@ -8,7 +8,7 @@ public class MessageType {
     public static final int SEND_MESSAGE = 2;
     public static final int RECEIVED_MESSAGE = 3;
 
-    public static final int SEND_FILE = 4;
-    public static final int RECEIVED_FILE = 5;
+    public static final int SEND_ATTACHMENT = 4;
+    public static final int RECEIVED_ATTACHMENT = 5;
 
 }
