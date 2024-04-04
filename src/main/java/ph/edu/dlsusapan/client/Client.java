@@ -26,6 +26,10 @@ public class Client implements Transceiver {
 
 
     public Client(String host, int port, UUID uuid, String name, boolean logToFile) throws IOException, InterruptedException {
+        System.out.println("\nYour connection to the DLSUsapan Chat Room on port " + port + " has been successfully\nestablished. Your unique ID is: " + uuid + ". Please\nensure to retain this ID for all future logins.");
+
+        System.out.println("\n\t\tCommands (/):\n\t\t\ttype '/attach' to send a file.\n\t\t\ttype '/logout' to log out and close the connection.\n\t\t\ttype any message to start messaging.");
+
         this.uuid = uuid;
         this.name = name;
         this.logToFile = logToFile;
