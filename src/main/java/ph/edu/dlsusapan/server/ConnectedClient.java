@@ -1,6 +1,7 @@
 package ph.edu.dlsusapan.server;
 
 import ph.edu.dlsusapan.common.message.Message;
+import ph.edu.dlsusapan.common.message.MessageType;
 import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
 import java.io.*;
@@ -51,8 +52,8 @@ public class ConnectedClient {
                     }
                 }
             } catch (IOException e) {
-                // TODO
-                System.out.println("CLIENT DISCONNECTED");
+                Message logoutMessage = new Message(uuid, name, MessageType.LOGOUT, "has logged out.", null);
+                server.receive(logoutMessage);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
