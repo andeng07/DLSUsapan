@@ -11,4 +11,6 @@ public class MessageType {
     public static final int SEND_ATTACHMENT = 4;
     public static final int RECEIVED_ATTACHMENT = 5;
 
+    public static final int NOT_RECEIVED = 6;
+
 }
