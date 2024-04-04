@@ -152,7 +152,7 @@ public class Server implements Transceiver {
 
         if (saveLogFile) {
 
-            File file = new File(".", "logs_" + System.currentTimeMillis());
+            File file = new File(".", "logs_" + System.currentTimeMillis() + ".txt");
 
             try {
                 FileOutputStream out = new FileOutputStream(file);
