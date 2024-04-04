@@ -5,27 +5,34 @@ import ph.edu.dlsusapan.common.message.MessageType;
 import ph.edu.dlsusapan.common.message.Transceiver;
 import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
 public class Server implements Transceiver {
-
     private final ServerSocket serverSocket;
+
+    private final boolean saveLogFile;
 
     private boolean isGatewayOpen = false;
 
     private final Map<UUID, ConnectedClient> connectedClients = new HashMap<>();
 
+    private final List<Log> logs = new ArrayList<>();
+
+    private final List<Message> messages = new ArrayList<>();
+
     public Server(int port, boolean saveLogFile) throws IOException {
 
         serverSocket = new ServerSocket(port);
 
+        this.saveLogFile = saveLogFile;
+
         // TODO : EDIT ?
         System.out.println("A new DLSUsapan chat room server has been created!");
+
+        // todo listen for inputs
 
         openGateway();
 
@@ -47,6 +54,8 @@ public class Server implements Transceiver {
                 connectedClient.listen();
 
                 receive(message);
+
+                // todo
             } catch (IOException | ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
@@ -72,8 +81,11 @@ public class Server implements Transceiver {
     @Override
     public void receive(Message message) {
         switch (message.type) {
-            case 0, 1, 2, 4:
+            case 0, 1, 2, 4: {
+                messages.add(message);
+
                 transmit(message);
+            }
         }
 
         log(message);
@@ -96,14 +108,42 @@ public class Server implements Transceiver {
             default -> "None";
         };
 
-        System.out.println(
-                "\n" +
-                        "Timestamp => " + timestamp + "\n" +
-                        "Message Source => " + message.fromId + " | " + message.fromName + "\n" +
-                        "Message Destination => " + (destination == null ? "None" : destination.uuid + " | " + destination.name) + "\n" +
-                        "Action => " + action +
-                        "\n"
-        );
+        Log log = new Log(timestamp, message.fromName + " (UUID:" + message.fromName + ")", (destination == null ? "None" : destination.uuid + " | " + destination.name), action);
 
+        logs.add(log);
+
+        System.out.println(log);
+    }
+
+    public void terminate() {
+        // TODO log file
+
+        if (saveLogFile) {
+
+            File file = new File(".", "logs_" + System.currentTimeMillis());
+
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+
+                logs.forEach(log -> {
+                    try {
+                        out.write(log.toString().getBytes());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+                out.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
