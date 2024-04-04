@@ -95,12 +95,12 @@ public class Client implements Transceiver {
     @Override
     public void receive(Message message) {
         if (message.content != null) {
-            System.out.println("\n" + message.fromName + " => " + message.content);
+            System.out.println(message.fromName + " => " + message.content);
         }
 
         if (message.messageAttachment != null) {
             try {
-                System.out.println("\n" + message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
+                System.out.println(message.fromName + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
