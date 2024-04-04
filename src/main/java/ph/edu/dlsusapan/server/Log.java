@@ -9,7 +9,7 @@ public class Log {
     public final String destination;
     public final String action;
 
-    public Log( Date timestamp, String source, String destination, String action) {
+    public Log(Date timestamp, String source, String destination, String action) {
         this.timestamp = timestamp;
         this.source = source;
         this.destination = destination;
