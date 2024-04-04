@@ -25,41 +25,64 @@ public class Server implements Transceiver {
 
     public Server(int port, boolean saveLogFile) throws IOException {
 
+        System.out.println("\nThe DLSUsapan Chat Room Server has been successfully initialized.\n" +
+                "The server is now active on port " + port + ".\n" +
+                "Please ensure that your clients connect to this port for communication.\n" +
+                "Logs will be printed for server activities.\n");
+
+        System.out.println("\t\tCommands (/):\n\t\t\ttype '/terminate' to send a file.\n");
+
+
         serverSocket = new ServerSocket(port);
 
         this.saveLogFile = saveLogFile;
 
-        // TODO : EDIT ?
-        System.out.println("A new DLSUsapan chat room server has been created!");
-
-        // todo listen for inputs
+        Scanner scanner = new Scanner(System.in);
 
         openGateway();
 
+        do {
+            String messageContent = scanner.nextLine();
+
+            if (messageContent.isBlank() || messageContent.isEmpty()) continue;
+
+            if (messageContent.startsWith("/")) { // meaning this is a command
+                String[] command = messageContent.split(" ");
+
+                switch (command[0]) {
+
+                    case "/terminate" -> {
+                        terminate();
+                    }
+
+                }
+            }
+
+        } while(true);
     }
 
     private void openGateway() {
-        if (isGatewayOpen) return;
+        new Thread(() -> {
+            if (isGatewayOpen) return;
 
-        while ((isGatewayOpen = true)) {
-            try {
-                Socket socket = serverSocket.accept();
+            while ((isGatewayOpen = true)) {
+                try {
+                    Socket socket = serverSocket.accept();
 
-                Message message = (Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine()));
+                    Message message = (Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine()));
 
-                ConnectedClient connectedClient = new ConnectedClient(this, message.fromId, message.fromName, socket);
+                    ConnectedClient connectedClient = new ConnectedClient(this, message.fromId, message.fromName, socket);
 
-                addClient(connectedClient);
+                    addClient(connectedClient);
 
-                connectedClient.listen();
+                    connectedClient.listen();
 
-                receive(message);
-
-                // todo
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+                    receive(message);
+                } catch (IOException | ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
             }
-        }
+        }).start();
     }
 
     private void closeGateway() {
@@ -82,13 +105,23 @@ public class Server implements Transceiver {
     public void receive(Message message) {
         switch (message.type) {
             case 0, 1, 2, 4: {
-                messages.add(message);
+                if (message.type == MessageType.LOGOUT) {
+                    connectedClients.remove(message.fromId);
+                }
 
+                if (message.type == MessageType.SEND_MESSAGE || message.type == MessageType.SEND_ATTACHMENT) {
+                    if (connectedClients.size() != 2) {
+                        transmit(new Message(null, null, MessageType.NOT_RECEIVED, "you're the only one in this chat room.", null));
+                        return;
+                    }
+                }
+
+                messages.add(message);
                 transmit(message);
+
+                log(message);
             }
         }
-
-        log(message);
     }
 
     public void log(Message message) {
@@ -108,7 +141,7 @@ public class Server implements Transceiver {
             default -> "None";
         };
 
-        Log log = new Log(timestamp, message.fromName + " (UUID:" + message.fromName + ")", (destination == null ? "None" : destination.uuid + " | " + destination.name), action);
+        Log log = new Log(timestamp, message.fromName + " (UUID:" + message.fromId + ")", (destination == null ? "None" : destination.name + " (UUID:" + destination.uuid + ")"), action);
 
         logs.add(log);
 
@@ -116,7 +149,6 @@ public class Server implements Transceiver {
     }
 
     public void terminate() {
-        // TODO log file
 
         if (saveLogFile) {
 
@@ -145,5 +177,7 @@ public class Server implements Transceiver {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        System.out.println("\nServer shutdown initiated. Thank you for using DLSUsapan Chat Room. Have a great day!");
     }
 }
