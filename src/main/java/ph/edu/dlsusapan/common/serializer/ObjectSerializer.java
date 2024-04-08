@@ -2,6 +2,9 @@ package ph.edu.dlsusapan.common.serializer;
 
 import java.io.*;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class ObjectSerializer {
 
     public static byte[] serialize(Object object) throws IOException {

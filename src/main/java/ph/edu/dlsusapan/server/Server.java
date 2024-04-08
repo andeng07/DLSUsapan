@@ -11,6 +11,8 @@ import java.net.Socket;
 import java.util.*;
 
 /**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ *
  * Server representation that can transmit and receive data
  */
 public class Server implements Transceiver {
@@ -45,7 +47,7 @@ public class Server implements Transceiver {
     private final List<Message> messages = new ArrayList<>();
 
     /**
-     * @param port port of the socket
+     * @param port        port of the socket
      * @param saveLogFile flag to save file on terminate
      * @throws IOException exception
      */
@@ -57,7 +59,7 @@ public class Server implements Transceiver {
                 "Please ensure that your clients connect to this port for communication.\n" +
                 "Logs will be printed for server activities.\n");
 
-        System.out.println("\t\tCommands (/):\n\t\t\ttype '/terminate' to send a file.\n");
+        System.out.println("\t\tCommands (/):\n\t\t\ttype '/terminate' to end the program.\n");
 
         /**
          * create socket
@@ -79,24 +81,27 @@ public class Server implements Transceiver {
         /**
          * Process inputs from console
          */
-        do {
-            String messageContent = scanner.nextLine();
+        try {
+            do {
+                String messageContent = scanner.nextLine();
+                if (messageContent.isBlank() || messageContent.isEmpty()) continue;
 
-            if (messageContent.isBlank() || messageContent.isEmpty()) continue;
+                if (messageContent.startsWith("/")) { // meaning this is a command
+                    String[] command = messageContent.split(" ");
 
-            if (messageContent.startsWith("/")) { // meaning this is a command
-                String[] command = messageContent.split(" ");
+                    switch (command[0]) {
 
-                switch (command[0]) {
+                        case "/terminate" -> {
+                            terminate();
+                        }
 
-                    case "/terminate" -> {
-                        terminate();
                     }
-
                 }
-            }
 
-        } while(true);
+            } while (true);
+        } catch (NoSuchElementException e) {
+            // IGNORE
+        }
     }
 
     private void openGateway() {
@@ -109,7 +114,9 @@ public class Server implements Transceiver {
         new Thread(() -> {
             if (isGatewayOpen) return;
 
-            while ((isGatewayOpen = true)) {
+            isGatewayOpen = true;
+
+            while (isGatewayOpen) {
                 try {
                     /**
                      * waits for a connection
@@ -119,7 +126,8 @@ public class Server implements Transceiver {
                     /**
                      * gets the initial message, containing the user's information to create the user
                      */
-                    Message message = (Message) ObjectSerializer.deserialize(Base64.getDecoder().decode(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine()));
+                    Message message = (Message) ObjectSerializer.deserialize(Base64.getDecoder()
+                            .decode(new BufferedReader(new InputStreamReader(socket.getInputStream())).readLine()));
 
                     /**
                      * creates the server-side representation of a client
@@ -137,8 +145,12 @@ public class Server implements Transceiver {
                     connectedClient.listen();
 
                     receive(message);
+
+                    if (connectedClients.size() >= 2) {
+                        closeGateway();
+                    }
                 } catch (IOException | ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                    // ignore
                 }
             }
         }).start();
@@ -176,11 +188,14 @@ public class Server implements Transceiver {
             case MessageType.LOGIN, MessageType.LOGOUT, MessageType.SEND_MESSAGE, MessageType.SEND_ATTACHMENT: {
                 if (message.type == MessageType.LOGOUT) {
                     connectedClients.remove(message.fromId);
+
+                    openGateway();
                 }
 
                 if (message.type == MessageType.SEND_MESSAGE || message.type == MessageType.SEND_ATTACHMENT) {
                     if (connectedClients.size() != 2) {
-                        transmit(new Message(null, null, MessageType.NOT_RECEIVED, "you're the only one in this chat room.", null));
+                        transmit(new Message(null, null, MessageType.NOT_RECEIVED,
+                                "you're the only one in this chat room.", null));
                         return;
                     }
                 }
@@ -195,6 +210,7 @@ public class Server implements Transceiver {
 
     /**
      * logs the message
+     *
      * @param message the message
      */
     public void log(Message message) {
@@ -217,7 +233,8 @@ public class Server implements Transceiver {
             default -> "None";
         };
 
-        Log log = new Log(timestamp, message.fromName + " (UUID:" + message.fromId + ")", (destination == null ? "None" : destination.name + " (UUID:" + destination.uuid + ")"), action);
+        Log log = new Log(timestamp, message.fromName + " (UUID:" + message.fromId + ")",
+                (destination == null ? "None" : destination.name + " (UUID:" + destination.uuid + ")"), action);
 
         logs.add(log);
 

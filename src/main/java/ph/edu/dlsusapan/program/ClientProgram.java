@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.util.Scanner;
 import java.util.UUID;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class ClientProgram {
 
     public static void main(String[] args) {

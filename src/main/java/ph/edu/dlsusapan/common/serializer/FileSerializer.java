@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class FileSerializer {
 
     // Method to convert file to byte array

@@ -9,11 +9,14 @@ import ph.edu.dlsusapan.common.serializer.ObjectSerializer;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Scanner;
 import java.util.UUID;
 
 /**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ *
  * A client representation
  */
 public class Client implements Transceiver {
@@ -85,12 +88,7 @@ public class Client implements Transceiver {
                 switch (command[0]) {
 
                     case "/attach" -> {
-                        if (command.length != 2) {
-                            System.out.println("Usage: /attach <file>");
-                            continue;
-                        }
-
-                        File file = new File(command[1]);
+                        File file = new File(String.join(" ", Arrays.copyOfRange(command, 1, command.length)));
 
                         if (!file.exists()) {
                             System.out.println("File not found!");
@@ -149,7 +147,7 @@ public class Client implements Transceiver {
          * if the message is not an attachment
          */
         if (message.content != null) {
-            System.out.println(((message.fromName != null) ? message.fromName : "Server") + " => " + message.content);
+            System.out.println(((message.fromName != null) ? message.fromName : "Server") + " => You: " + message.content);
         }
 
         /**
@@ -157,7 +155,10 @@ public class Client implements Transceiver {
          */
         if (message.messageAttachment != null) {
             try {
-                System.out.println((message.fromName != null) ? message.fromName : "Server" + " => Sent an attachment: " + FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name).getAbsolutePath());
+                System.out.println(((message.fromName != null) ? message.fromName : "Server") +
+                        " => You: Sent an attachment at " +
+                        FileSerializer.bytesToFile(message.messageAttachment.content, message.messageAttachment.name)
+                                .getAbsolutePath());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

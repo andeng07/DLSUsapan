@@ -10,6 +10,8 @@ import java.util.Base64;
 import java.util.UUID;
 
 /**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ *
  * A server-side representation of a client that is connected to our server socket
  */
 public class ConnectedClient {

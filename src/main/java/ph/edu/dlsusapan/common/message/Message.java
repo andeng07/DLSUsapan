@@ -3,6 +3,9 @@ package ph.edu.dlsusapan.common.message;
 import java.io.Serializable;
 import java.util.UUID;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class Message implements Serializable {
 
     public final UUID fromId;

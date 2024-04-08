@@ -2,6 +2,9 @@ package ph.edu.dlsusapan.program;
 
 import java.util.Scanner;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class Input {
 
     public static String getString(String prompt, Scanner scanner) {

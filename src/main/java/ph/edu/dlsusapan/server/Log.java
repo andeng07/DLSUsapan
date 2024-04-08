@@ -3,6 +3,8 @@ package ph.edu.dlsusapan.server;
 import java.util.Date;
 
 /**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ *
  * A representation of a log object
  */
 public class Log {

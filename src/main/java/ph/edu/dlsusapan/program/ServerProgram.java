@@ -5,6 +5,9 @@ import ph.edu.dlsusapan.server.Server;
 import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * @author XC23 - Chael Sumilang & Arron Baranquil @ 2024
+ */
 public class ServerProgram {
 
     public static void main(String[] args) {
